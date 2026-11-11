@@ -18,44 +18,23 @@
             color: #f8fafc;
         }
 
-        /* Animación de giro para el Motor DC y Paso a Paso */
         @keyframes spin-fast {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         @keyframes spin-step {
             0% { transform: rotate(0deg); }
-            25% { transform: rotate(90deg); }
-            50% { transform: rotate(180deg); }
-            75% { transform: rotate(270deg); }
             100% { transform: rotate(360deg); }
         }
         .animate-motor-dc {
             animation: spin-fast 0.6s linear infinite;
         }
         .animate-motor-stepper {
-            animation: spin-step 1.5s steps(4) infinite;
+            animation: spin-step 1.5s linear infinite;
         }
 
-        /* Olas en el tanque de líquido */
-        .wave {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 1000px;
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            left: -50%;
-            top: -180%;
-            animation: wave-animation 6s infinite linear;
-        }
-        @keyframes wave-animation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Transiciones suaves para nivel de líquido */
         .liquid-level {
-            transition: height 0.5s ease-in-out, background-color 0.5s ease;
+            transition: height 0.5s ease-in-out;
         }
     </style>
 </head>
@@ -96,160 +75,194 @@
         </div>
     </header>
 
-    <!-- Contenido Principal: Esquema del Sistema -->
+    <!-- Contenido Principal -->
     <main class="grid grid-cols-1 lg:grid-cols-3 gap-6 my-auto">
         
-        <!-- SECCIÓN IZQUIERDA: Selector de Líquido & Motor Paso a Paso -->
+        <!-- SECCIÓN IZQUIERDA: LLENADO (Líquido 1 y Líquido 2 con Motores Paso a Paso) -->
         <div class="space-y-6">
-            <!-- Selector de Líquidos -->
-            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-flask text-teal-400"></i> Selector de Líquido
+            
+            <!-- Líquido 1 -->
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm font-semibold text-cyan-300 flex items-center gap-2">
+                        <i class="fa-solid fa-flask"></i> Líquido 1
                     </h2>
-                    <span class="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded">Ingreso</span>
+                    <span id="stepperStatus1" class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">Inactivo</span>
                 </div>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="selectLiquid('A')" id="btnLiquidA" class="p-3 border-2 border-cyan-500 bg-cyan-950/40 rounded-xl flex flex-col items-center justify-center transition group">
-                        <i class="fa-solid fa-droplet text-2xl text-cyan-400 mb-2 group-hover:scale-110 transition-transform"></i>
-                        <span class="font-bold text-sm text-cyan-200">Líquido A</span>
-                        <span class="text-[10px] text-slate-400">Agua Purificada</span>
-                    </button>
-                    <button onclick="selectLiquid('B')" id="btnLiquidB" class="p-3 border border-slate-700 bg-slate-950/50 rounded-xl flex flex-col items-center justify-center hover:border-amber-500/50 transition group">
-                        <i class="fa-solid fa-vial text-2xl text-amber-400 mb-2 group-hover:scale-110 transition-transform"></i>
-                        <span class="font-bold text-sm text-amber-200">Líquido B</span>
-                        <span class="text-[10px] text-slate-400">Solución Concentrada</span>
-                    </button>
-                </div>
-            </div>
 
-            <!-- Motor Paso a Paso -->
-            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-gears text-indigo-400"></i> Motor Paso a Paso
-                    </h2>
-                    <span id="stepperStatus" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded">Inactivo</span>
-                </div>
-                <div class="flex items-center gap-4 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
-                    <div class="relative flex items-center justify-center w-16 h-16 bg-indigo-950/40 border border-indigo-500/30 rounded-full">
-                        <i id="iconStepper" class="fa-solid fa-compact-disc text-3xl text-indigo-400"></i>
+                <div class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                    <div class="w-12 h-12 bg-cyan-950/40 border border-cyan-500/30 rounded-full flex items-center justify-center">
+                        <i id="iconStepper1" class="fa-solid fa-compact-disc text-xl text-cyan-400"></i>
                     </div>
-                    <div class="flex-1 space-y-2">
-                        <div class="text-xs text-slate-400">Control de Inyección</div>
-                        <div class="flex gap-2">
-                            <button onclick="triggerStepper('FILL')" class="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-lg transition">
-                                <i class="fa-solid fa-play mr-1"></i> Dosificar
-                            </button>
-                            <button onclick="triggerStepper('STOP')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg text-slate-300 transition">
-                                Parar
-                            </button>
+                    <div class="flex-1 space-y-2 text-xs">
+                        <div>
+                            <div class="flex justify-between text-slate-400 mb-1">
+                                <span>Valv. Paso a Paso (0°-360°):</span>
+                                <span id="valStep1Txt" class="text-cyan-300 font-mono">0% (0°)</span>
+                            </div>
+                            <input type="range" id="sliderStep1" min="0" max="100" value="0" oninput="updateStepAngle(1, this.value)" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-500">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-slate-400 mb-1">
+                                <span>Cantidad a llenar tarro:</span>
+                                <span id="valFill1Txt" class="text-cyan-300 font-mono">0%</span>
+                            </div>
+                            <input type="range" id="sliderFill1" min="0" max="100" value="0" oninput="validarYActualizarMezcla()" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-cyan-500">
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Líquido 2 -->
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm font-semibold text-amber-300 flex items-center gap-2">
+                        <i class="fa-solid fa-vial"></i> Líquido 2
+                    </h2>
+                    <span id="stepperStatus2" class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">Inactivo</span>
+                </div>
+
+                <div class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                    <div class="w-12 h-12 bg-amber-950/40 border border-amber-500/30 rounded-full flex items-center justify-center">
+                        <i id="iconStepper2" class="fa-solid fa-compact-disc text-xl text-amber-400"></i>
+                    </div>
+                    <div class="flex-1 space-y-2 text-xs">
+                        <div>
+                            <div class="flex justify-between text-slate-400 mb-1">
+                                <span>Valv. Paso a Paso (0°-360°):</span>
+                                <span id="valStep2Txt" class="text-amber-300 font-mono">0% (0°)</span>
+                            </div>
+                            <input type="range" id="sliderStep2" min="0" max="100" value="0" oninput="updateStepAngle(2, this.value)" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-amber-500">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-slate-400 mb-1">
+                                <span>Cantidad a llenar tarro:</span>
+                                <span id="valFill2Txt" class="text-amber-300 font-mono">0%</span>
+                            </div>
+                            <input type="range" id="sliderFill2" min="0" max="100" value="0" oninput="validarYActualizarMezcla()" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-amber-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerta de Validación de Líquidos -->
+            <div id="alertBox" class="hidden p-3 bg-red-950/80 border border-red-700 text-red-300 text-xs rounded-xl flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                <span id="alertMsg">La suma de los líquidos supera el 100% del tarro. Ajuste los valores.</span>
+            </div>
+
+            <button onclick="iniciarDosificacion()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs shadow-lg transition">
+                <i class="fa-solid fa-play mr-1"></i> Iniciar Dosificación de Líquidos
+            </button>
         </div>
 
-        <!-- SECCIÓN CENTRAL: El Tarro / Tanque Visual -->
-        <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col items-center justify-center relative min-h-[420px]">
+        <!-- SECCIÓN CENTRAL: El Tarro / Tanque Visual + Slider de Sensor Ultrasónico al Lado -->
+        <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col items-center justify-center relative min-h-[450px]">
             <div class="text-center mb-2">
                 <span class="text-xs font-bold text-slate-400 tracking-widest uppercase">Estación de Mezcla</span>
-                <h3 class="text-lg font-bold text-slate-200">Tanque Principial</h3>
+                <h3 class="text-lg font-bold text-slate-200">Tarro Principal</h3>
             </div>
 
-            <!-- Estructura del Tarro/Tanque -->
-            <div class="relative w-48 sm:w-56 h-80 border-4 border-slate-700 border-t-0 rounded-b-3xl bg-slate-950/70 overflow-hidden shadow-inner flex flex-col justify-end">
-                
-                <!-- Graduaciones del Tanque (10% a 100%) -->
-                <div class="absolute inset-0 flex flex-col justify-between py-2 px-3 pointer-events-none z-20 text-[10px] font-mono text-slate-400 select-none">
-                    <div class="flex justify-between items-center border-b border-slate-700/50"><span>100%</span><span class="w-2 h-0.5 bg-slate-500"></span></div>
-                    <div class="flex justify-between items-center border-b border-slate-800/40"><span>90%</span><span class="w-1.5 h-0.5 bg-slate-600"></span></div>
-                    <div class="flex justify-between items-center border-b border-slate-700/50"><span>80%</span><span class="w-2 h-0.5 bg-slate-500"></span></div>
-                    <div class="flex justify-between items-center border-b border-slate-800/40"><span>70%</span><span class="w-1.5 h-0.5 bg-slate-600"></span></div>
-                    <div class="flex justify-between items-center border-b border-slate-700/50"><span>60%</span><span class="w-2 h-0.5 bg-slate-500"></span></div>
-                    <div class="flex justify-between items-center border-b border-slate-800/40"><span>50%</span><span class="w-1.5 h-0.5 bg-slate-600"></span></div>
-                    <div class="flex justify-between items-center border-b border-slate-700/50"><span>40%</span><span class="w-2 h-0.5 bg-slate-500"></span></div>
-                    <div class="flex justify-between items-center border-b border-slate-800/40"><span>30%</span><span class="w-1.5 h-0.5 bg-slate-600"></span></div>
-                    <div class="flex justify-between items-center border-b border-slate-700/50"><span>20%</span><span class="w-2 h-0.5 bg-slate-500"></span></div>
-                    <div class="flex justify-between items-center border-b border-slate-800/40"><span>10%</span><span class="w-1.5 h-0.5 bg-slate-600"></span></div>
+            <div class="flex items-center gap-6">
+                <!-- Estructura del Tarro más alto y con 100% abajo en la base visual -->
+                <div class="relative w-40 sm:w-48 h-96 border-4 border-slate-700 border-t-0 rounded-b-3xl bg-slate-950/70 overflow-hidden shadow-inner flex flex-col justify-end">
+                    
+                    <!-- Graduaciones del Tanque -->
+                    <div class="absolute inset-0 flex flex-col justify-between py-2 px-3 pointer-events-none z-30 text-[10px] font-mono text-slate-300 select-none font-bold">
+                        <div class="flex justify-between items-center border-b border-slate-700/50"><span>0% (Vacío)</span></div>
+                        <div class="flex justify-between items-center border-b border-slate-800/40"><span>10%</span></div>
+                        <div class="flex justify-between items-center border-b border-slate-700/50"><span>20%</span></div>
+                        <div class="flex justify-between items-center border-b border-slate-800/40"><span>30%</span></div>
+                        <div class="flex justify-between items-center border-b border-slate-700/50"><span>40%</span></div>
+                        <div class="flex justify-between items-center border-b border-slate-800/40"><span>50%</span></div>
+                        <div class="flex justify-between items-center border-b border-slate-700/50"><span>60%</span></div>
+                        <div class="flex justify-between items-center border-b border-slate-800/40"><span>70%</span></div>
+                        <div class="flex justify-between items-center border-b border-slate-700/50"><span>80%</span></div>
+                        <div class="flex justify-between items-center border-b border-slate-800/40"><span>90%</span></div>
+                        <div class="text-emerald-400 border-t border-emerald-500/50 pt-0.5"><span>100% (Máx)</span></div>
+                    </div>
+
+                    <!-- Contenedores Apilados de Líquido 1 y Líquido 2 -->
+                    <div class="w-full absolute bottom-0 flex flex-col justify-end z-10 pointer-events-none">
+                        <div id="fillLiquid2" class="w-full bg-amber-500/80 transition-all duration-500" style="height: 0%;"></div>
+                        <div id="fillLiquid1" class="w-full bg-cyan-500/80 transition-all duration-500" style="height: 0%;"></div>
+                    </div>
                 </div>
 
-                <!-- Contenedor Dinámico de Líquido -->
-                <div id="liquidFill" class="liquid-level w-full bg-cyan-500/80 relative z-10" style="height: 0%;">
-                    <div class="wave"></div>
+                <!-- Slider del Sensor Ultrasónico al lado del tarro -->
+                <div class="flex flex-col items-center h-96 justify-between bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                    <span class="text-[10px] text-slate-400 font-semibold text-center">Sensor HC-SR04</span>
+                    <div class="h-72 flex items-center">
+                        <input type="range" id="sensorSlider" min="0" max="100" value="0" orient="vertical" oninput="simularSensorDesdeSlider(this.value)" class="h-full accent-blue-500 cursor-pointer" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                    </div>
+                    <span id="sensorStatusLabel" class="text-xs font-mono font-bold text-blue-400">0% (Vacío)</span>
                 </div>
             </div>
 
-            <!-- Indicador Numérico de Porcentaje -->
-            <div class="mt-4 flex items-center gap-2">
-                <span class="text-slate-400 text-xs">Nivel Actual:</span>
-                <span id="liquidPercentageText" class="text-xl font-bold text-cyan-400 font-mono">0%</span>
-            </div>
-            
-            <!-- Controles Manuales Rápidos (Simulación) -->
-            <div class="mt-3 flex gap-2">
-                <button onclick="simulateLevel(0)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-[11px] rounded text-slate-300">Vaciar</button>
-                <button onclick="simulateLevel(50)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-[11px] rounded text-slate-300">50%</button>
-                <button onclick="simulateLevel(100)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-[11px] rounded text-slate-300">100%</button>
+            <!-- Indicador Numérico Global -->
+            <div class="mt-3 flex items-center gap-2">
+                <span class="text-slate-400 text-xs">Total en Tarro:</span>
+                <span id="totalPercentageText" class="text-lg font-bold text-cyan-400 font-mono">0%</span>
             </div>
         </div>
 
-        <!-- SECCIÓN DERECHA: Motor DC + Sensor HC-SR04 & Servomotor -->
+        <!-- SECCIÓN DERECHA: MEZCLADO (Motor DC) & Servomotor de Salida -->
         <div class="space-y-6">
             
-            <!-- Motor DC y Sensor Ultrasónico (Superior) -->
-            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl">
-                <div class="grid grid-cols-2 gap-4">
-                    
-                    <!-- Motor DC -->
-                    <div class="flex flex-col items-center p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-                        <span class="text-[11px] font-semibold text-slate-400 mb-2">MOTOR DC (Agitador)</span>
-                        <div class="w-12 h-12 rounded-full bg-amber-950/30 border border-amber-500/30 flex items-center justify-center mb-2">
-                            <i id="iconMotorDC" class="fa-solid fa-fan text-2xl text-amber-500"></i>
-                        </div>
-                        <span id="motorDCStateText" class="text-xs font-bold text-slate-400">APAGADO</span>
-                    </div>
-
-                    <!-- Sensor HC-SR04 / HC-SR05 -->
-                    <div class="flex flex-col items-center p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-                        <span class="text-[11px] font-semibold text-slate-400 mb-2">HC-SR04 / HC-SR05</span>
-                        <div class="flex items-center gap-2 mb-2 text-blue-400">
-                            <i class="fa-solid fa-ruler-vertical text-2xl"></i>
-                        </div>
-                        <span id="sensorDistanceText" class="text-xs font-mono font-bold text-blue-300">-- cm</span>
-                        <span class="text-[9px] text-slate-500">Distancia Tanque</span>
-                    </div>
-
+            <!-- MEZCLADO (Motor DC) con Velocidad, Tiempo y Alternancia Derecha/Izquierda -->
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm font-semibold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-fan"></i> Mezclado (Motor DC)
+                    </h2>
+                    <span id="mezclaStateBadge" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded">Inactivo</span>
                 </div>
-                <div class="mt-3 text-[11px] text-slate-400 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
-                    <i class="fa-solid fa-circle-info text-blue-400 mr-1"></i>
-                    El <strong>Motor DC</strong> se activa automáticamente cuando el sensor detecta que el líquido llega al <strong>100%</strong>.
+
+                <div class="flex items-center gap-4 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                    <div class="w-14 h-14 rounded-full bg-amber-950/30 border border-amber-500/30 flex items-center justify-center">
+                        <i id="iconMotorDC" class="fa-solid fa-fan text-2xl text-amber-500"></i>
+                    </div>
+                    <div class="flex-1 space-y-2 text-xs">
+                        <div>
+                            <div class="flex justify-between text-slate-400 mb-1">
+                                <span>Velocidad Mezclado:</span>
+                                <span id="velValTxt" class="text-amber-300 font-mono">50%</span>
+                            </div>
+                            <input type="range" id="sliderVel" min="0" max="100" value="50" oninput="document.getElementById('velValTxt').innerText = this.value + '%'" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-amber-500">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-slate-400 mb-1">
+                                <span>Tiempo Máx (0 - 1 min):</span>
+                                <span id="timeValTxt" class="text-amber-300 font-mono">30 s</span>
+                            </div>
+                            <input type="range" id="sliderTime" min="5" max="60" value="30" step="5" oninput="document.getElementById('timeValTxt').innerText = this.value + ' s'" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer accent-amber-500">
+                        </div>
+                    </div>
                 </div>
+
+                <button onclick="iniciarMezclado()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl text-xs transition">
+                    <i class="fa-solid fa-play mr-1"></i> Iniciar Ciclo de Mezclado
+                </button>
+                <div id="mezcladoInfo" class="text-[11px] text-slate-400 text-center font-mono"></div>
             </div>
 
-            <!-- Servomotor (Inferior Derecho - Válvula de Salida) -->
-            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-gauge-high text-emerald-400"></i> Servomotor (Válvula Drenaje)
+            <!-- Servomotor (Válvula de Salida Inferior Derecha) -->
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm font-semibold text-emerald-300 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-door-open"></i> Válvula Salida (Servo)
                     </h2>
                     <span id="servoAngleDisplay" class="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded">
                         0° (0%)
                     </span>
                 </div>
 
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between gap-4">
-                        <i class="fa-solid fa-door-closed text-slate-500 text-lg"></i>
-                        <input id="servoSlider" type="range" min="0" max="100" value="0" oninput="updateServoFromSlider(this.value)" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
-                        <i class="fa-solid fa-door-open text-emerald-400 text-lg"></i>
-                    </div>
-
+                <div class="space-y-3">
+                    <input id="servoSlider" type="range" min="0" max="100" value="0" oninput="updateServoFromSlider(this.value)" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
                     <div class="grid grid-cols-3 gap-2">
                         <button onclick="setServoPercentage(0)" class="py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded text-slate-300">Cerrado (0°)</button>
                         <button onclick="setServoPercentage(50)" class="py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded text-slate-300">50% (90°)</button>
-                        <button onclick="setServoPercentage(100)" class="py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded text-slate-300">100% (180°)</button>
+                        <button onclick="setServoPercentage(100)" class="py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded text-slate-300">Abierto (180°)</button>
                     </div>
                 </div>
             </div>
@@ -258,7 +271,7 @@
 
     </main>
 
-    <!-- Monitor de Consola de Mensajes MQTT -->
+    <!-- Consola MQTT -->
     <footer class="mt-6 bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
         <div class="flex justify-between items-center mb-2">
             <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
@@ -271,241 +284,148 @@
         </div>
     </footer>
 
-    <!-- LOGICA JAVASCRIPT & MQTT PAHO CLIENT -->
+    <!-- LÓGICA JAVASCRIPT -->
     <script>
-        // Variables Globales de Estado
         let mqttClient = null;
         let isConnected = false;
-        let currentLiquid = 'A';
-        let currentFillPercentage = 0;
-        let isDcMotorRunning = false;
-        let isStepperRunning = false;
+        let mezclaTimer = null;
 
-        // Tópicos MQTT Estándar
         const TOPICS = {
-            STEPPER_CONTROL: "esp32/stepper/control",
-            MOTOR_DC_CONTROL: "esp32/motordc/control",
-            SERVO_CONTROL: "esp32/servo/control",
-            LIQUID_SELECT: "esp32/liquid/select",
-            SENSOR_DISTANCE: "esp32/sensor/distancia",
-            TANK_LEVEL: "esp32/tank/level"
+            STEPPER_1: "esp32/stepper1/control",
+            STEPPER_2: "esp32/stepper2/control",
+            MOTOR_DC: "esp32/motordc/control",
+            SERVO: "esp32/servo/control",
+            SENSOR: "esp32/sensor/distancia"
         };
 
-        // Configuración de Conexión MQTT sobre WebSockets
         function toggleMQTTConnection() {
             if (isConnected) {
-                disconnectMQTT();
-            } else {
-                connectMQTT();
-            }
-        }
-
-        function connectMQTT() {
-            const host = document.getElementById('mqttHost').value.trim();
-            const port = parseInt(document.getElementById('mqttPort').value);
-            const clientId = "WebClient_" + Math.random().toString(16).substr(2, 8);
-
-            logConsole(`Conectando a ws://${host}:${port} como ${clientId}...`, "info");
-
-            try {
-                mqttClient = new Paho.MQTT.Client(host, Number(port), clientId);
-
-                // Configurar Callback handlers
-                mqttClient.onConnectionLost = onConnectionLost;
-                mqttClient.onMessageArrived = onMessageArrived;
-
-                // Opciones de conexión
-                mqttClient.connect({
-                    onSuccess: onConnectSuccess,
-                    onFailure: onConnectFailure,
-                    useSSL: false,
-                    keepAliveInterval: 30
-                });
-            } catch (err) {
-                logConsole(`Error al inicializar cliente MQTT: ${err.message}`, "error");
-            }
-        }
-
-        function disconnectMQTT() {
-            if (mqttClient) {
                 mqttClient.disconnect();
                 updateUIState(false);
-                logConsole("Desconectado manualmente del broker MQTT.", "warning");
-            }
-        }
-
-        function onConnectSuccess() {
-            updateUIState(true);
-            logConsole("¡Conexión MQTT sobre WebSockets establecida exitosamente!", "success");
-
-            // Suscribirse a los tópicos de respuesta/sensores de la ESP32
-            mqttClient.subscribe(TOPICS.SENSOR_DISTANCE);
-            mqttClient.subscribe(TOPICS.TANK_LEVEL);
-            mqttClient.subscribe(TOPICS.MOTOR_DC_CONTROL);
-            mqttClient.subscribe(TOPICS.SERVO_CONTROL);
-            logConsole("Suscrito a los tópicos de telemetría de la ESP32.", "info");
-        }
-
-        function onConnectFailure(response) {
-            updateUIState(false);
-            logConsole(`Fallo al conectar MQTT: ${response.errorMessage}`, "error");
-        }
-
-        function onConnectionLost(responseObject) {
-            updateUIState(false);
-            if (responseObject.errorCode !== 0) {
-                logConsole(`Conexión perdida: ${responseObject.errorMessage}`, "error");
-            }
-        }
-
-        // Recepción de Mensajes MQTT
-        function onMessageArrived(message) {
-            const topic = message.destinationName;
-            const payload = message.payloadString;
-            logConsole(`[MQTT Recibido] ${topic} -> ${payload}`, "received");
-
-            // Procesar actualización según el tópico
-            if (topic === TOPICS.SENSOR_DISTANCE) {
-                const dist = parseInt(payload);
-                document.getElementById('sensorDistanceText').innerText = `${dist} cm`;
-                
-                // Simulación: Si la distancia es corta (tanque lleno a 100%), activar nivel 100%
-                if (dist <= 5) {
-                    setLevel(100);
-                }
-            } else if (topic === TOPICS.TANK_LEVEL) {
-                setLevel(parseInt(payload));
-            } else if (topic === TOPICS.MOTOR_DC_CONTROL) {
-                setDcMotorState(payload === "ON");
-            } else if (topic === TOPICS.SERVO_CONTROL) {
-                const val = parseInt(payload);
-                updateServoUI(val);
-            }
-        }
-
-        // Función para publicar mensajes MQTT
-        function publishMQTT(topic, payload) {
-            if (mqttClient && isConnected) {
-                const message = new Paho.MQTT.Message(String(payload));
-                message.destinationName = topic;
-                mqttClient.send(message);
-                logConsole(`[MQTT Enviado] ${topic} -> ${payload}`, "sent");
             } else {
-                logConsole(`[Simulación local - Sin Broker] ${topic} -> ${payload}`, "warning");
+                const host = document.getElementById('mqttHost').value.trim();
+                const port = parseInt(document.getElementById('mqttPort').value);
+                mqttClient = new Paho.MQTT.Client(host, Number(port), "WebClient_" + parseInt(Math.random()*10000));
+                mqttClient.onConnectionLost = () => updateUIState(false);
+                mqttClient.onMessageArrived = (m) => logConsole(`[MQTT] ${m.destinationName} -> ${m.payloadString}`, "received");
+                mqttClient.connect({
+                    onSuccess: () => { updateUIState(true); logConsole("Conectado con éxito al broker MQTT.", "success"); },
+                    onFailure: (e) => logConsole(`Error conexión: ${e.errorMessage}`, "error"),
+                    useSSL: false
+                });
             }
         }
 
-        // --- LÓGICA DE CONTROL DE HARDWARE Y ANIMACIONES VISUALES ---
-
-        // Selección de Tipo de Líquido
-        function selectLiquid(type) {
-            currentLiquid = type;
-            const btnA = document.getElementById('btnLiquidA');
-            const btnB = document.getElementById('btnLiquidB');
-            const liquidFill = document.getElementById('liquidFill');
-
-            if (type === 'A') {
-                btnA.className = "p-3 border-2 border-cyan-500 bg-cyan-950/40 rounded-xl flex flex-col items-center justify-center transition group";
-                btnB.className = "p-3 border border-slate-700 bg-slate-950/50 rounded-xl flex flex-col items-center justify-center hover:border-amber-500/50 transition group";
-                liquidFill.style.backgroundColor = "rgba(6, 182, 212, 0.85)"; // Cian
-            } else {
-                btnB.className = "p-3 border-2 border-amber-500 bg-amber-950/40 rounded-xl flex flex-col items-center justify-center transition group";
-                btnA.className = "p-3 border border-slate-700 bg-slate-950/50 rounded-xl flex flex-col items-center justify-center hover:border-cyan-500/50 transition group";
-                liquidFill.style.backgroundColor = "rgba(245, 158, 11, 0.85)"; // Ámbar
-            }
-
-            publishMQTT(TOPICS.LIQUID_SELECT, type);
+        function updateUIState(conn) {
+            isConnected = conn;
+            document.getElementById('statusText').innerText = conn ? "Conectado" : "Desconectado";
+            document.getElementById('btnConnectText').innerText = conn ? "Desconectar" : "Conectar";
+            document.getElementById('statusBadge').className = conn ? "flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-950/50 border border-emerald-800/50 text-emerald-400 font-medium" : "flex items-center gap-2 px-3 py-2 rounded-lg bg-red-950/50 border border-red-800/50 text-red-400 font-medium";
         }
 
-        // Control del Motor Paso a Paso
-        function triggerStepper(action) {
-            const icon = document.getElementById('iconStepper');
-            const status = document.getElementById('stepperStatus');
-
-            if (action === 'FILL') {
-                isStepperRunning = true;
-                icon.classList.add('animate-motor-stepper');
-                status.innerText = "Girando...";
-                status.className = "text-xs bg-indigo-950 border border-indigo-700 text-indigo-300 px-2 py-0.5 rounded";
-                
-                // Simular llenado progresivo cuando gira el motor paso a paso
-                simulateGradualFill();
-            } else {
-                isStepperRunning = false;
-                icon.classList.remove('animate-motor-stepper');
-                status.innerText = "Inactivo";
-                status.className = "text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded";
-            }
-
-            publishMQTT(TOPICS.STEPPER_CONTROL, action);
+        function updateStepAngle(liquido, val) {
+            const angle = Math.round((val / 100) * 360);
+            document.getElementById(`valStep${liquido}Txt`).innerText = `${val}% (${angle}°)`;
         }
 
-        // Cambio de Nivel del Tanque (10% - 100%)
-        function setLevel(percentage) {
-            currentFillPercentage = Math.min(100, Math.max(0, percentage));
-            const fillElement = document.getElementById('liquidFill');
-            const textElement = document.getElementById('liquidPercentageText');
-
-            fillElement.style.height = `${currentFillPercentage}%`;
-            textElement.innerText = `${currentFillPercentage}%`;
-
-            // Lógica: Cuando llega al 100%, la ESP32 o el software activa el Motor DC (Agitador)
-            if (currentFillPercentage >= 100) {
-                setDcMotorState(true);
-                document.getElementById('sensorDistanceText').innerText = "2 cm";
-                logConsole("Alerta: ¡Tanque al 100%! Motor DC activado automáticamente.", "warning");
-            } else if (currentFillPercentage === 0) {
-                setDcMotorState(false);
-                document.getElementById('sensorDistanceText').innerText = "30 cm";
-            } else {
-                // Calcular distancia simulada para sensor HC-SR04
-                const distanceCm = Math.round(30 - (currentFillPercentage * 0.28));
-                document.getElementById('sensorDistanceText').innerText = `${distanceCm} cm`;
-            }
-        }
-
-        function simulateLevel(percentage) {
-            setLevel(percentage);
-            publishMQTT(TOPICS.TANK_LEVEL, percentage);
-        }
-
-        function simulateGradualFill() {
-            if (!isStepperRunning) return;
-            if (currentFillPercentage < 100) {
-                setLevel(currentFillPercentage + 10);
-                setTimeout(simulateGradualFill, 800);
-            } else {
-                triggerStepper('STOP');
-            }
-        }
-
-        // Estado del Motor DC (Agitador)
-        function setDcMotorState(active) {
-            isDcMotorRunning = active;
-            const icon = document.getElementById('iconMotorDC');
-            const stateText = document.getElementById('motorDCStateText');
-
-            if (active) {
-                icon.classList.add('animate-motor-dc');
-                stateText.innerText = "GIRANDO";
-                stateText.className = "text-xs font-bold text-amber-400";
-            } else {
-                icon.classList.remove('animate-motor-dc');
-                stateText.innerText = "APAGADO";
-                stateText.className = "text-xs font-bold text-slate-400";
-            }
-
-            publishMQTT(TOPICS.MOTOR_DC_CONTROL, active ? "ON" : "OFF");
-        }
-
-        // Control del Servomotor (Apertura Drenaje 0-100% / 0°-180°)
-        function updateServoFromSlider(val) {
-            updateServoUI(val);
-            publishMQTT(TOPICS.SERVO_CONTROL, val);
+        function validarYActualizarMezcla() {
+            let f1 = parseInt(document.getElementById('sliderFill1').value);
+            let f2 = parseInt(document.getElementById('sliderFill2').value);
             
-            // Si la válvula se abre, simular drenaje del líquido
-            if (parseInt(val) > 0 && currentFillPercentage > 0) {
-                drainLiquid(parseInt(val));
+            document.getElementById('valFill1Txt').innerText = f1 + '%';
+            document.getElementById('valFill2Txt').innerText = f2 + '%';
+
+            let suma = f1 + f2;
+            const alertBox = document.getElementById('alertBox');
+
+            if (suma > 100) {
+                alertBox.classList.remove('hidden');
+                document.getElementById('alertMsg').innerText = `La suma (${suma}%) supera el 100% máximo del tarro.`;
+            } else {
+                alertBox.classList.add('hidden');
+            }
+
+            // Actualizar visualización apilada en el tarro
+            document.getElementById('fillLiquid1').style.height = f1 + '%';
+            document.getElementById('fillLiquid2').style.height = f2 + '%';
+            document.getElementById('totalPercentageText').innerText = suma + '%';
+            document.getElementById('sensorSlider').value = suma;
+            document.getElementById('sensorStatusLabel').innerText = suma === 100 ? "100% (LLENO)" : suma + '%';
+        }
+
+        function simularSensorDesdeSlider(val) {
+            document.getElementById('sensorStatusLabel').innerText = val == 100 ? "100% (LLENO)" : val + '%';
+            document.getElementById('totalPercentageText').innerText = val + '%';
+            // Repartir proporcional si se mueve el sensor manualmente
+            document.getElementById('fillLiquid1').style.height = (val / 2) + '%';
+            document.getElementById('fillLiquid2').style.height = (val / 2) + '%';
+        }
+
+        function iniciarDosificacion() {
+            let f1 = parseInt(document.getElementById('sliderFill1').value);
+            let f2 = parseInt(document.getElementById('sliderFill2').value);
+            if (f1 + f2 > 100) {
+                alert("No se puede iniciar: ¡Supera el 100% del líquido!");
+                return;
+            }
+            logConsole(`Iniciando dosificación: L1=${f1}%, L2=${f2}%`, "sent");
+            if(isConnected) {
+                mqttClient.send(new Paho.MQTT.Message(String(f1)), TOPICS.STEPPER_1);
+                mqttClient.send(new Paho.MQTT.Message(String(f2)), TOPICS.STEPPER_2);
+            }
+        }
+
+        function iniciarMezclado() {
+            let vel = document.getElementById('sliderVel').value;
+            let tiempoRestante = parseInt(document.getElementById('sliderTime').value);
+            const badge = document.getElementById('mezclaStateBadge');
+            const info = document.getElementById('mezcladoInfo');
+            const icon = document.getElementById('iconMotorDC');
+
+            badge.innerText = "MEZCLANDO";
+            badge.className = "text-xs bg-amber-950 border border-amber-700 text-amber-300 px-2 py-0.5 rounded";
+            icon.classList.add('animate-motor-dc');
+
+            if(mezclaTimer) clearInterval(mezclaIntentInterval);
+
+            let giroDerecha = true;
+            let transcurrido = 0;
+
+            if(isConnected) {
+                mqttClient.send(new Paho.MQTT.Message(`ON,Vel:${vel}`), TOPICS.MOTOR_DC);
+            }
+
+            mezclaTimer = setInterval(() => {
+                transcurrido += 1;
+                tiempoRestante -= 1;
+                
+                // Cambiar sentido cada 5 segundos
+                if (transcurrido % 5 === 0) {
+                    giroDerecha = !giroDerecha;
+                    logConsole(`Motor DC: Cambiando sentido a ${giroDerecha ? 'Derecha ➡️' : 'Izquierda ⬅️'}`, "info");
+                }
+
+                info.innerText = `Tiempo restante: ${tiempoRestante}s | Sentido: ${giroDerecha ? 'Derecha' : 'Izquierda'}`;
+
+                if (tiempoRestante <= 0) {
+                    clearInterval(mezclaTimer);
+                    icon.classList.remove('animate-motor-dc');
+                    badge.innerText = "Inactivo";
+                    badge.className = "text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded";
+                    info.innerText = "Ciclo de mezclado finalizado.";
+                    if(isConnected) {
+                        mqttClient.send(new Paho.MQTT.Message("OFF"), TOPICS.MOTOR_DC);
+                    }
+                    logConsole("Ciclo de mezclado completado.", "success");
+                }
+            }, 1000);
+        }
+
+        function updateServoFromSlider(val) {
+            const angle = Math.round((val / 100) * 180);
+            document.getElementById('servoAngleDisplay').innerText = `${angle}° (${val}%)`;
+            if (isConnected) {
+                mqttClient.send(new Paho.MQTT.Message(String(val)), TOPICS.SERVO);
             }
         }
 
@@ -514,54 +434,17 @@
             updateServoFromSlider(val);
         }
 
-        function updateServoUI(val) {
-            const angle = Math.round((val / 100) * 180);
-            document.getElementById('servoAngleDisplay').innerText = `${angle}° (${val}%)`;
-        }
-
-        function drainLiquid(flowRate) {
-            if (currentFillPercentage > 0) {
-                const step = Math.ceil(flowRate / 20);
-                setLevel(Math.max(0, currentFillPercentage - step));
-            }
-        }
-
-        // --- AUXILIARES DE INTERFAZ & CONSOLA ---
-        function updateUIState(connected) {
-            isConnected = connected;
-            const badge = document.getElementById('statusBadge');
-            const statusText = document.getElementById('statusText');
-            const btnText = document.getElementById('btnConnectText');
-            const btnConnect = document.getElementById('btnConnect');
-
-            if (connected) {
-                badge.className = "flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-950/50 border border-emerald-800/50 text-emerald-400 font-medium";
-                statusText.innerText = "Conectado";
-                btnText.innerText = "Desconectar";
-                btnConnect.className = "px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg shadow-md transition flex items-center gap-2";
-            } else {
-                badge.className = "flex items-center gap-2 px-3 py-2 rounded-lg bg-red-950/50 border border-red-800/50 text-red-400 font-medium";
-                statusText.innerText = "Desconectado";
-                btnText.innerText = "Conectar";
-                btnConnect.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-md transition flex items-center gap-2";
-            }
-        }
-
         function logConsole(msg, type = "info") {
             const consoleEl = document.getElementById('mqttConsole');
             const entry = document.createElement('div');
-            const time = new Date().toLocaleTimeString();
-
-            let colorClass = "text-slate-300";
-            if (type === "error") colorClass = "text-red-400";
-            if (type === "success") colorClass = "text-emerald-400";
-            if (type === "warning") colorClass = "text-amber-400";
-            if (type === "sent") colorClass = "text-cyan-400";
-            if (type === "received") colorClass = "text-purple-400";
-
-            entry.className = `${colorClass} flex items-start gap-2`;
-            entry.innerHTML = `<span class="text-slate-600 select-none">[${time}]</span> <span>${msg}</span>`;
-
+            let color = "text-slate-300";
+            if (type === "success") color = "text-emerald-400";
+            if (type === "error") color = "text-red-400";
+            if (type === "warning") color = "text-amber-400";
+            if (type === "sent") color = "text-cyan-400";
+            if (type === "received") color = "text-purple-400";
+            entry.className = `${color} flex items-start gap-2`;
+            entry.innerHTML = `<span class="text-slate-600">[${new Date().toLocaleTimeString()}]</span> <span>${msg}</span>`;
             consoleEl.appendChild(entry);
             consoleEl.scrollTop = consoleEl.scrollHeight;
         }
@@ -571,4 +454,4 @@
         }
     </script>
 </body>
-</html
+</html>
