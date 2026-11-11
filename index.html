@@ -217,6 +217,9 @@ $('go').onclick=async()=>{
       if(!q){step(n,'skip');continue}
       step(n,'on');await valve(o);A.goal=Math.min(100,A.v1+A.v2+q);A.rate=o/100;A.mode='fill'+n;
       await until(()=>A.v1+A.v2>=A.goal-0.01);A.mode=null;await valve(0);step(n,'done');
+      
+      // ⏱️ Pausa de 2 segundos antes de pasar al siguiente paso o líquido
+      await wt(2000); 
     }
     step(3,'on');
     if(mv>0&&mt>0){const end=Date.now()+mt*1000;let d='right';
