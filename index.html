@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control MQTT - Sistema de Llenado</title>
+    <title>Mezclador controlado por MQTT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
@@ -24,9 +24,9 @@
             </div>
             <div>
                 <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-teal-400 bg-clip-text text-transparent">
-                    Controlador MQTT de Llenado ESP32
+                    Mezclador controlado por MQTT
                 </h1>
-                <p class="text-xs text-slate-400">Sistema Industrial de Mezcla y Dosificación</p>
+                <p class="text-xs text-slate-400">Panel de Control Automático ESP32</p>
             </div>
         </div>
 
@@ -51,17 +51,17 @@
 
     <main class="grid grid-cols-1 lg:grid-cols-3 gap-6 my-auto">
         
-        <!-- SECCIÓN IZQUIERDA: LLENADO -->
+        <!-- SECCIÓN IZQUIERDA: LÍQUIDOS Y PASO A PASO -->
         <div class="space-y-6">
             <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
                 <h2 class="text-sm font-semibold text-cyan-300 flex items-center gap-2"><i class="fa-solid fa-flask"></i> Líquido 1</h2>
                 <div class="space-y-2 text-xs">
                     <div>
-                        <div class="flex justify-between text-slate-400 mb-1"><span>Valv. Paso a Paso (0°-360°):</span><span id="valStep1Txt" class="text-cyan-300 font-mono">0% (0°)</span></div>
+                        <div class="flex justify-between text-slate-400 mb-1"><span>Apertura Válvula Paso a Paso (0°-360°):</span><span id="valStep1Txt" class="text-cyan-300 font-mono">0% (0°)</span></div>
                         <input type="range" id="sliderStep1" min="0" max="100" value="0" oninput="updateStepAngle(1, this.value)" class="w-full h-1.5 bg-slate-800 rounded accent-cyan-500">
                     </div>
                     <div>
-                        <div class="flex justify-between text-slate-400 mb-1"><span>Cantidad a llenar tarro:</span><span id="valFill1Txt" class="text-cyan-300 font-mono">0%</span></div>
+                        <div class="flex justify-between text-slate-400 mb-1"><span>Cantidad a llenar:</span><span id="valFill1Txt" class="text-cyan-300 font-mono">0%</span></div>
                         <input type="range" id="sliderFill1" min="0" max="100" value="0" oninput="validarYActualizarMezcla()" class="w-full h-1.5 bg-slate-800 rounded accent-cyan-500">
                     </div>
                 </div>
@@ -71,11 +71,11 @@
                 <h2 class="text-sm font-semibold text-amber-300 flex items-center gap-2"><i class="fa-solid fa-vial"></i> Líquido 2</h2>
                 <div class="space-y-2 text-xs">
                     <div>
-                        <div class="flex justify-between text-slate-400 mb-1"><span>Valv. Paso a Paso (0°-360°):</span><span id="valStep2Txt" class="text-amber-300 font-mono">0% (0°)</span></div>
+                        <div class="flex justify-between text-slate-400 mb-1"><span>Apertura Válvula Paso a Paso (0°-360°):</span><span id="valStep2Txt" class="text-amber-300 font-mono">0% (0°)</span></div>
                         <input type="range" id="sliderStep2" min="0" max="100" value="0" oninput="updateStepAngle(2, this.value)" class="w-full h-1.5 bg-slate-800 rounded accent-amber-500">
                     </div>
                     <div>
-                        <div class="flex justify-between text-slate-400 mb-1"><span>Cantidad a llenar tarro:</span><span id="valFill2Txt" class="text-amber-300 font-mono">0%</span></div>
+                        <div class="flex justify-between text-slate-400 mb-1"><span>Cantidad a llenar:</span><span id="valFill2Txt" class="text-amber-300 font-mono">0%</span></div>
                         <input type="range" id="sliderFill2" min="0" max="100" value="0" oninput="validarYActualizarMezcla()" class="w-full h-1.5 bg-slate-800 rounded accent-amber-500">
                     </div>
                 </div>
@@ -83,15 +83,21 @@
 
             <div id="alertBox" class="hidden p-3 bg-red-950/80 border border-red-700 text-red-300 text-xs rounded-xl flex items-center gap-2">
                 <i class="fa-solid fa-triangle-exclamation text-lg"></i>
-                <span id="alertMsg">La suma de los líquidos supera el 100% del tarro.</span>
+                <span id="alertMsg">La suma de los líquidos supera el 100%.</span>
             </div>
 
-            <button onclick="iniciarDosificacion()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs shadow-lg transition">
-                <i class="fa-solid fa-play mr-1"></i> INGRESAR LIQUIDOS
-            </button>
+            <!-- Botones de Envío Automático -->
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="enviarCicloAutomatico()" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-xs shadow-lg transition">
+                    <i class="fa-solid fa-play mr-1"></i> ENVIAR
+                </button>
+                <button onclick="cancelarCicloAutomatico()" class="py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl text-xs shadow-lg transition">
+                    <i class="fa-solid fa-stop mr-1"></i> CANCELAR
+                </button>
+            </div>
         </div>
 
-        <!-- SECCIÓN CENTRAL: TARRO (0% ABAJO, 100% ARRIBA) Y SENSOR AL LADO -->
+        <!-- SECCIÓN CENTRAL: TARRO (0% ABAJO, 100% ARRIBA) Y SENSOR VIRTUAL -->
         <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col items-center justify-center relative min-h-[450px]">
             <div class="text-center mb-2">
                 <span class="text-xs font-bold text-slate-400 tracking-widest uppercase">Estación de Mezcla</span>
@@ -99,9 +105,8 @@
             </div>
 
             <div class="flex items-center gap-6">
-                <!-- Tarro: 0% abajo, 100% arriba -->
+                <!-- Tarro: 0% abajo, 100% arriba con líquidos visibles apilados -->
                 <div class="relative w-40 sm:w-48 h-96 border-4 border-slate-700 border-t-0 rounded-b-3xl bg-slate-950/70 overflow-hidden shadow-inner flex flex-col justify-end">
-                    
                     <div class="absolute inset-0 flex flex-col justify-between py-2 px-3 pointer-events-none z-30 text-[10px] font-mono text-slate-300 font-bold">
                         <div class="text-emerald-400 border-b border-emerald-500/50 pb-0.5"><span>100% (Máx)</span></div>
                         <div class="flex justify-between items-center border-b border-slate-800/40"><span>90%</span></div>
@@ -116,18 +121,18 @@
                         <div class="flex justify-between items-center"><span>0% (Vacío)</span></div>
                     </div>
 
-                    <!-- Líquidos apilados desde abajo hacia arriba -->
-                    <div class="w-full absolute bottom-0 flex flex-col justify-end z-10 pointer-events-none">
-                        <div id="fillLiquid1" class="w-full bg-cyan-500/80 transition-all duration-500" style="height: 0%;"></div>
-                        <div id="fillLiquid2" class="w-full bg-amber-500/80 transition-all duration-500" style="height: 0%;"></div>
+                    <!-- Apilado real: Líquido 1 abajo, Líquido 2 encima -->
+                    <div class="w-full absolute bottom-0 flex flex-col justify-end z-10 pointer-events-none w-full">
+                        <div id="fillLiquid2" class="w-full bg-amber-500/80 liquid-level" style="height: 0%;"></div>
+                        <div id="fillLiquid1" class="w-full bg-cyan-500/80 liquid-level" style="height: 0%;"></div>
                     </div>
                 </div>
 
-                <!-- Slider del Sensor Ultrasónico al lado -->
+                <!-- Slider del Sensor Virtual al lado -->
                 <div class="flex flex-col items-center h-96 justify-between bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                    <span class="text-[10px] text-slate-400 font-semibold text-center">Sensor HC-SR04</span>
+                    <span class="text-[10px] text-slate-400 font-semibold text-center">Sensor Virtual</span>
                     <div class="h-72 flex items-center">
-                        <input type="range" id="sensorSlider" min="0" max="100" value="0" orient="vertical" oninput="simularSensorDesdeSlider(this.value)" class="h-full accent-blue-500 cursor-pointer" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                        <input type="range" id="sensorSlider" min="0" max="100" value="0" orient="vertical" class="h-full accent-blue-500 cursor-pointer pointer-events-none" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
                     </div>
                     <span id="sensorStatusLabel" class="text-xs font-mono font-bold text-blue-400">0% (Vacío)</span>
                 </div>
@@ -164,11 +169,6 @@
                         </div>
                     </div>
                 </div>
-
-                <button onclick="iniciarMezclado()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl text-xs transition">
-                    <i class="fa-solid fa-play mr-1"></i> Iniciar Ciclo de Mezclado
-                </button>
-                <div id="mezcladoInfo" class="text-[11px] text-slate-400 text-center font-mono"></div>
             </div>
 
             <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
@@ -179,12 +179,8 @@
                     <span id="servoAngleDisplay" class="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded">0° (0%)</span>
                 </div>
                 <div class="space-y-3">
-                    <input id="servoSlider" type="range" min="0" max="100" value="0" oninput="updateServoFromSlider(this.value)" class="w-full h-2 bg-slate-800 rounded-lg accent-emerald-500">
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="setServoPercentage(0)" class="py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded text-slate-300">Cerrado</button>
-                        <button onclick="setServoPercentage(50)" class="py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded text-slate-300">50%</button>
-                        <button onclick="setServoPercentage(100)" class="py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded text-slate-300">Abierto</button>
-                    </div>
+                    <input id="servoSlider" type="range" min="0" max="100" value="0" class="w-full h-2 bg-slate-800 rounded-lg accent-emerald-500">
+                    <span class="text-[10px] text-slate-400">Porcentaje de apertura para drenar el líquido automáticamente al finalizar.</span>
                 </div>
             </div>
         </div>
@@ -200,12 +196,8 @@
         let mqttClient = null;
         let isConnected = false;
 
-        const TOPICS = {
-            STEPPER_1: "esp32/stepper1/control",
-            STEPPER_2: "esp32/stepper2/control",
-            MOTOR_DC: "esp32/motordc/control",
-            SERVO: "esp32/servo/control"
-        };
+        const TOPIC_AUTO = "esp32/automatic/start";
+        const TOPIC_CANCEL = "esp32/automatic/cancel";
 
         function toggleMQTTConnection() {
             if (isConnected) {
@@ -217,7 +209,7 @@
                 mqttClient = new Paho.MQTT.Client(host, Number(port), "WebClient_" + parseInt(Math.random()*10000));
                 mqttClient.onConnectionLost = () => updateUIState(false);
                 mqttClient.connect({
-                    onSuccess: () => { updateUIState(true); },
+                    onSuccess: () => { updateUIState(true); logConsole("Conectado al broker MQTT.", "success"); },
                     useSSL: false
                 });
             }
@@ -248,6 +240,7 @@
                 document.getElementById('alertBox').classList.add('hidden');
             }
 
+            // Visualización apilada: Líquido 1 abajo, Líquido 2 encima
             document.getElementById('fillLiquid1').style.height = f1 + '%';
             document.getElementById('fillLiquid2').style.height = f2 + '%';
             document.getElementById('totalPercentageText').innerText = suma + '%';
@@ -255,49 +248,88 @@
             document.getElementById('sensorStatusLabel').innerText = suma === 100 ? "100% (LLENO)" : suma + '%';
         }
 
-        function simularSensorDesdeSlider(val) {
-            document.getElementById('sensorStatusLabel').innerText = val == 100 ? "100% (LLENO)" : val + '%';
-            document.getElementById('totalPercentageText').innerText = val + '%';
-            document.getElementById('fillLiquid1').style.height = (val / 2) + '%';
-            document.getElementById('fillLiquid2').style.height = (val / 2) + '%';
-        }
-
-        function iniciarDosificacion() {
-            let f1 = parseInt(document.getElementById('sliderFill1').value);
-            let f2 = parseInt(document.getElementById('sliderFill2').value);
-            if (f1 + f2 > 100) { alert("¡Supera el 100%!"); return; }
-            if(isConnected) {
-                mqttClient.send(new Paho.MQTT.Message(String(f1)), TOPICS.STEPPER_1);
-                mqttClient.send(new Paho.MQTT.Message(String(f2)), TOPICS.STEPPER_2);
-            }
-        }
-
-        function iniciarMezclado() {
+        function enviarCicloAutomatico() {
+            let step1 = document.getElementById('sliderStep1').value;
+            let fill1 = document.getElementById('sliderFill1').value;
+            let step2 = document.getElementById('sliderStep2').value;
+            let fill2 = document.getElementById('sliderFill2').value;
             let vel = document.getElementById('sliderVel').value;
-            let tiempo = document.getElementById('sliderTime').value;
-            if(isConnected) {
-                mqttClient.send(new Paho.MQTT.Message(`START,Vel:${vel},Time:${tiempo}`), TOPICS.MOTOR_DC);
+            let time = document.getElementById('sliderTime').value;
+            let servo = document.getElementById('servoSlider').value;
+
+            if (parseInt(fill1) + parseInt(fill2) > 100) {
+                alert("La suma de los líquidos supera el 100%. Corrige los valores.");
+                return;
             }
-            document.getElementById('iconMotorDC').classList.add('animate-motor-dc');
-            document.getElementById('mezclaStateBadge').innerText = "MEZCLANDO";
-            document.getElementById('mezclaStateBadge').className = "text-xs bg-amber-950 border border-amber-700 text-amber-300 px-2 py-0.5 rounded";
+
+            let payload = JSON.stringify({step1, fill1, step2, fill2, vel, time, servo});
+            logConsole("Enviando comando automático completo...", "sent");
+
+            if (isConnected) {
+                mqttClient.send(new Paho.MQTT.Message(payload), TOPIC_AUTO);
+            }
+
+            // Simulación visual en web de la animación de mezcla y vaciado
+            simularAnimacionAutomatica(parseInt(fill1), parseInt(fill2), parseInt(time), parseInt(servo));
+        }
+
+        function cancelarCicloAutomatico() {
+            logConsole("Cancelando ciclo automático...", "warning");
+            if (isConnected) {
+                mqttClient.send(new Paho.MQTT.Message("CANCEL"), TOPIC_CANCEL);
+            }
+            document.getElementById('iconMotorDC').classList.remove('animate-motor-dc');
+            document.getElementById('mezclaStateBadge').innerText = "Inactivo";
+            document.getElementById('mezclaStateBadge').className = "text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded";
+        }
+
+        function simularAnimacionAutomatica(f1, f2, tiempoMezcla, servoVal) {
+            document.getElementById('mezclaStateBadge').innerText = "EJECUTANDO";
+            document.getElementById('mezclaStateBadge').className = "text-xs bg-blue-950 border border-blue-700 text-blue-300 px-2 py-0.5 rounded";
             
+            // Simular encendido del Motor DC con mezcla
+            setTimeout(() => {
+                document.getElementById('iconMotorDC').classList.add('animate-motor-dc');
+                document.getElementById('mezclaStateBadge').innerText = "MEZCLANDO";
+                document.getElementById('mezclaStateBadge').className = "text-xs bg-amber-950 border border-amber-700 text-amber-300 px-2 py-0.5 rounded";
+            }, 1000);
+
+            // Al terminar el tiempo de mezcla, vaciar con el servo
             setTimeout(() => {
                 document.getElementById('iconMotorDC').classList.remove('animate-motor-dc');
+                document.getElementById('mezclaStateBadge').innerText = "VACIANDO";
+                document.getElementById('mezclaStateBadge').className = "text-xs bg-emerald-950 border border-emerald-700 text-emerald-300 px-2 py-0.5 rounded";
+                document.getElementById('servoAngleDisplay').innerText = `${Math.round((servoVal / 100) * 180)}° (${servoVal}%)`;
+                
+                // Vaciar gradualmente el tarro
+                document.getElementById('fillLiquid1').style.height = '0%';
+                document.getElementById('fillLiquid2').style.height = '0%';
+                document.getElementById('sensorSlider').value = 0;
+                document.getElementById('sensorStatusLabel').innerText = "0% (Vacío)";
+                document.getElementById('totalPercentageText').innerText = "0%";
+            }, 1000 + (tiempoMezcla * 1000));
+
+            // Finalizar todo
+            setTimeout(() => {
                 document.getElementById('mezclaStateBadge').innerText = "Inactivo";
                 document.getElementById('mezclaStateBadge').className = "text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded";
-                document.getElementById('mezcladoInfo').innerText = "Ciclo finalizado.";
-            }, tiempo * 1000);
+                document.getElementById('servoAngleDisplay').innerText = `0° (0%)`;
+                logConsole("Ciclo automático finalizado con éxito.", "success");
+            }, 2000 + (tiempoMezcla * 1000));
         }
 
-        function updateServoFromSlider(val) {
-            document.getElementById('servoAngleDisplay').innerText = `${Math.round((val / 100) * 180)}° (${val}%)`;
-            if (isConnected) mqttClient.send(new Paho.MQTT.Message(String(val)), TOPICS.SERVO);
-        }
-
-        function setServoPercentage(val) {
-            document.getElementById('servoSlider').value = val;
-            updateServoFromSlider(val);
+        function logConsole(msg, type = "info") {
+            const consoleEl = document.getElementById('mqttConsole');
+            const entry = document.createElement('div');
+            let color = "text-slate-300";
+            if (type === "success") color = "text-emerald-400";
+            if (type === "error") color = "text-red-400";
+            if (type === "warning") color = "text-amber-400";
+            if (type === "sent") color = "text-cyan-400";
+            consoleEl.appendChild(entry);
+            entry.className = `${color} flex items-start gap-2`;
+            entry.innerHTML = `<span class="text-slate-600">[${new Date().toLocaleTimeString()}]</span> <span>${msg}</span>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
         }
     </script>
 </body>
